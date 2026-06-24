@@ -89,10 +89,25 @@ exports.handler = async function (event, context) {
       itemCursor = data.cursor || null;
     } while (itemCursor);
 
+    // 1.5) Ordenar por fecha de creación (más nuevo primero) para poder
+    //      destacar los últimos N productos cargados. Si Loyverse no trae
+    //      created_at en algún item, se respeta el orden nativo de la API
+    //      (que en esta cuenta también pone los más nuevos primero).
+    const hasCreatedAt = allItems.some((it) => it.created_at);
+    if (hasCreatedAt) {
+      allItems.sort((a, b) => {
+        const da = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const db = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return db - da;
+      });
+    }
+    const NEW_COUNT = 10;
+
     // 2) Mapear cada item al formato simple que usa el frontend,
     //    clasificando la categoría por nombre de producto (ver arriba)
     const cleanItems = [];
-    for (const item of allItems) {
+    for (let i = 0; i < allItems.length; i++) {
+      const item = allItems[i];
       // Saltar items eliminados/archivados si Loyverse los marca
       if (item.deleted_at) continue;
 
@@ -122,6 +137,7 @@ exports.handler = async function (event, context) {
         category: classifyCategory(item.item_name),
         image: item.image_url || null,
         inStock: inStock,
+        isNew: i < NEW_COUNT,
       });
     }
 
