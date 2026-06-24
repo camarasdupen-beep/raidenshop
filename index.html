@@ -703,7 +703,7 @@
 </div>
 
 <div class="new-arrivals" id="newArrivals" style="display:none">
-  <div class="new-arrivals-title">🆕 Recién llegados</div>
+  <div class="new-arrivals-title">🔥 Recién llegados</div>
   <div class="new-arrivals-scroll" id="newArrivalsScroll"></div>
 </div>
 
@@ -899,7 +899,7 @@ function renderNewArrivals(){
     const iconBg = p.img ? 'rgba(242,245,238,0.04)' : bg;
 
     return `<div class="new-card" onclick="addToCart('${safeName}')">
-      <div class="new-card-badge">🆕 Nuevo</div>
+      <div class="new-card-badge">🔥 Nuevo</div>
       <div class="new-card-icon" style="background:${iconBg}">${iconInner}</div>
       <div class="new-card-name">${escapeHtml(p.n)}</div>
       <div class="new-card-price">${fmt(p.p)}</div>
@@ -940,7 +940,7 @@ function renderProducts(){
     return `<div class="prod${qty > 0 ? ' in-cart' : ''}" style="animation-delay:${Math.min(i,12) * 0.03}s">
       <div class="prod-icon${p.img ? ' has-img' : ''}" style="background:${iconBg}"${iconClick}>${iconInner}</div>
       <div class="prod-info">
-        ${p.isNew ? '<div class="new-pill">🆕 Nuevo</div>' : ''}
+        ${p.isNew ? '<div class="new-pill">🔥 Nuevo</div>' : ''}
         <div class="prod-name">${escapeHtml(p.n)}</div>
         <div class="prod-price">${fmt(p.p)}</div>
       </div>
