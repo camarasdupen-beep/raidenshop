@@ -932,36 +932,21 @@ function renderNewArrivals(){
   }).join('');
 }
 
-function renderProducts(){
-  const q = document.getElementById('searchInput').value.toLowerCase().trim();
-  const filtered = PRODUCTOS.filter(p => {
-    const matchCat = activeCat === 'all' || p.c === activeCat;
-    const matchQ = !q || p.n.toLowerCase().includes(q);
-    return matchCat && matchQ;
-  });
+function buildProductCardHtml(p, index){
+  const qty = cart[p.n] || 0;
+  const ic = CAT_ICONS[p.c] || '🛒';
+  const bg = CAT_BG[p.c] || 'rgba(242,245,238,0.06)';
+  const safeName = p.n.replace(/'/g, "\\'");
+  const safeImg = p.img ? p.img.replace(/'/g, "\\'") : '';
 
-  document.getElementById('countBar').textContent = `${filtered.length} producto${filtered.length !== 1 ? 's' : ''}`;
+  const iconInner = p.img
+    ? `<img src="${p.img}" alt="" loading="lazy" onerror="this.parentElement.classList.remove('has-img');this.parentElement.innerHTML='${ic}';this.parentElement.style.background='${bg}'">`
+    : ic;
+  const iconBg = p.img ? 'rgba(242,245,238,0.04)' : bg;
+  const iconClick = p.img ? ` onclick="openImgModal('${safeImg}','${safeName}')"` : '';
+  const delay = index != null ? `style="animation-delay:${Math.min(index,12) * 0.03}s"` : '';
 
-  const grid = document.getElementById('grid');
-  if(filtered.length === 0){
-    grid.innerHTML = `<div class="empty-msg">No encontramos productos con esa búsqueda.</div>`;
-    return;
-  }
-
-  grid.innerHTML = filtered.map((p, i) => {
-    const qty = cart[p.n] || 0;
-    const ic = CAT_ICONS[p.c] || '🛒';
-    const bg = CAT_BG[p.c] || 'rgba(242,245,238,0.06)';
-    const safeName = p.n.replace(/'/g, "\\'");
-    const safeImg = p.img ? p.img.replace(/'/g, "\\'") : '';
-
-    const iconInner = p.img
-      ? `<img src="${p.img}" alt="" loading="lazy" onerror="this.parentElement.classList.remove('has-img');this.parentElement.innerHTML='${ic}';this.parentElement.style.background='${bg}'">`
-      : ic;
-    const iconBg = p.img ? 'rgba(242,245,238,0.04)' : bg;
-    const iconClick = p.img ? ` onclick="openImgModal('${safeImg}','${safeName}')"` : '';
-
-    return `<div class="prod${qty > 0 ? ' in-cart' : ''}" style="animation-delay:${Math.min(i,12) * 0.03}s">
+  return `<div class="prod${qty > 0 ? ' in-cart' : ''}" data-pname="${escapeHtml(p.n)}" ${delay}>
       <div class="prod-icon${p.img ? ' has-img' : ''}" style="background:${iconBg}"${iconClick}>${iconInner}</div>
       <div class="prod-info">
         ${p.isNew ? '<div class="new-pill">🔥 Nuevo</div>' : ''}
@@ -978,7 +963,44 @@ function renderProducts(){
         <button class="add-btn" onclick="addToCart('${safeName}')">+</button>`}
       </div>
     </div>`;
-  }).join('');
+}
+
+function renderProducts(){
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const filtered = PRODUCTOS.filter(p => {
+    const matchCat = activeCat === 'all' || p.c === activeCat;
+    const matchQ = !q || p.n.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+
+  document.getElementById('countBar').textContent = `${filtered.length} producto${filtered.length !== 1 ? 's' : ''}`;
+
+  const grid = document.getElementById('grid');
+  if(filtered.length === 0){
+    grid.innerHTML = `<div class="empty-msg">No encontramos productos con esa búsqueda.</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map((p, i) => buildProductCardHtml(p, i)).join('');
+}
+
+// Actualiza solo la card de un producto puntual en el grid actual, sin
+// reconstruir ni re-animar el resto de la lista (evita el "flash" al
+// tocar + o cambiar cantidad).
+function updateSingleProductCard(name){
+  const grid = document.getElementById('grid');
+  const escapedName = escapeHtml(name);
+  const oldCard = grid.querySelector(`.prod[data-pname="${escapedName.replace(/"/g, '&quot;')}"]`);
+  if(!oldCard) return false; // no está visible en el filtro/categoría actual
+
+  const prod = PRODUCTOS.find(p => p.n === name);
+  if(!prod) return false;
+
+  const tmp = document.createElement('div');
+  tmp.innerHTML = buildProductCardHtml(prod, null);
+  const newCard = tmp.firstElementChild;
+  oldCard.replaceWith(newCard);
+  return true;
 }
 
 function openImgModal(src, name){
@@ -1000,7 +1022,7 @@ function escapeHtml(str){
 function addToCart(name){
   cart[name] = (cart[name] || 0) + 1;
   updateCartUI();
-  renderProducts();
+  updateSingleProductCard(name);
 
   const prod = PRODUCTOS.find(p => p.n === name);
   const pts = prod ? Math.round(prod.p * 0.01) : 0;
@@ -1021,13 +1043,13 @@ function changeQty(name, delta){
   cart[name] = (cart[name] || 0) + delta;
   if(cart[name] <= 0) delete cart[name];
   updateCartUI();
-  renderProducts();
+  updateSingleProductCard(name);
 }
 
 function removeFromCart(name){
   delete cart[name];
   updateCartUI();
-  renderProducts();
+  updateSingleProductCard(name);
 }
 
 function cartTotals(){
