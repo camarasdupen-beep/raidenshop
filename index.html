@@ -832,6 +832,7 @@ async function cargarProductos(){
     buildCategoryChips();
     renderNewArrivals();
     renderProducts();
+    updateCartUI(); // recalcula totales del carrito ahora que ya hay precios reales
   }catch(e){
     console.error(e);
     statusEl.style.display = 'block';
@@ -848,6 +849,29 @@ async function cargarProductos(){
 let cart = {};
 let activeCat = 'all';
 let fulfillment = 'pickup';
+
+// ============== PERSISTENCIA DEL CARRITO (localStorage) ==============
+const CART_STORAGE_KEY = 'raiden_shop_cart_v1';
+
+function saveCartToStorage(){
+  try{
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+  }catch(e){
+    // Si localStorage no está disponible (modo privado, etc.) seguimos sin guardar
+    console.warn('No se pudo guardar el carrito:', e);
+  }
+}
+
+function loadCartFromStorage(){
+  try{
+    const raw = localStorage.getItem(CART_STORAGE_KEY);
+    if(!raw) return {};
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === 'object') ? parsed : {};
+  }catch(e){
+    return {};
+  }
+}
 
 // ============== CATEGORÍAS ==============
 function buildCategoryChips(){
@@ -1020,6 +1044,8 @@ function cartTotals(){
 function updateCartUI(){
   const { items, totalItems, totalPrice, totalPoints } = cartTotals();
 
+  saveCartToStorage();
+
   document.getElementById('cartBadge').textContent = totalItems;
   document.getElementById('bbItems').textContent = `${totalItems} producto${totalItems !== 1 ? 's' : ''}`;
   document.getElementById('bbTotal').textContent = fmt(totalPrice);
@@ -1136,8 +1162,15 @@ function showToast(msg){
   }, 1800);
 }
 
+cart = loadCartFromStorage();
+const hadSavedCart = Object.keys(cart).length > 0;
+
 cargarProductos();
 updateCartUI();
+
+if(hadSavedCart){
+  showToast('🛒 Recuperamos tu carrito anterior');
+}
 </script>
 
 </body>
