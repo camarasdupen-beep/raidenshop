@@ -89,10 +89,36 @@ exports.handler = async function (event, context) {
       itemCursor = data.cursor || null;
     } while (itemCursor);
 
-    // 1.5) Ordenar por fecha de creación (más nuevo primero) para poder
-    //      destacar los últimos N productos cargados. Si Loyverse no trae
-    //      created_at en algún item, se respeta el orden nativo de la API
-    //      (que en esta cuenta también pone los más nuevos primero).
+    // 1.5) Traer inventario real por variante desde /inventory
+    // Devuelve { variant_id, in_stock } por cada variante con tracking activo.
+    // Si una variante no aparece en /inventory → no tiene tracking → se muestra disponible.
+    const inventoryMap = {}; // variant_id → in_stock (número)
+    try {
+      let invCursor = null;
+      do {
+        const url = new URL(`${LOYVERSE_BASE}/inventory`);
+        url.searchParams.set('limit', '250');
+        if (invCursor) url.searchParams.set('cursor', invCursor);
+
+        const res = await fetch(url.toString(), { headers: authHeaders });
+        if (res.ok) {
+          const data = await res.json();
+          (data.inventory_levels || []).forEach((inv) => {
+            if (inv.variant_id != null) {
+              inventoryMap[inv.variant_id] = inv.in_stock ?? null;
+            }
+          });
+          invCursor = data.cursor || null;
+        } else {
+          invCursor = null; // si falla inventory, seguimos sin él
+        }
+      } while (invCursor);
+    } catch (invErr) {
+      // Si /inventory falla (permisos, etc.), seguimos solo con available_for_sale
+      console.warn('No se pudo cargar inventario:', invErr.message);
+    }
+
+    // 1.6) Ordenar por fecha de creación (más nuevo primero)
     const hasCreatedAt = allItems.some((it) => it.created_at);
     if (hasCreatedAt) {
       allItems.sort((a, b) => {
@@ -103,33 +129,42 @@ exports.handler = async function (event, context) {
     }
     const NEW_COUNT = 10;
 
-    // 2) Mapear cada item al formato simple que usa el frontend,
-    //    clasificando la categoría por nombre de producto (ver arriba)
+    // 2) Mapear cada item al formato simple que usa el frontend
     const cleanItems = [];
     for (let i = 0; i < allItems.length; i++) {
       const item = allItems[i];
-      // Saltar items eliminados/archivados si Loyverse los marca
       if (item.deleted_at) continue;
 
       const variants = item.variants || [];
       let price = null;
-      let inStock = true; // default: con stock (si Loyverse no trackea inventario, se muestra disponible)
+      let inStock = true;
 
       if (variants.length > 0) {
         const v = variants[0];
         if (v.stores && v.stores.length > 0) {
           const store = v.stores[0];
           price = store.price != null ? store.price : v.default_price;
-          // available_for_sale es el campo real que usa Loyverse para indicar
-          // si el producto está disponible para la venta. Cuando lo desactivás
-          // en Loyverse, viene false → lo mostramos como sin stock.
-          inStock = store.available_for_sale !== false;
+
+          // Determinar stock combinando dos fuentes:
+          // 1. available_for_sale: si está en false, sin stock (desactivado manualmente)
+          // 2. inventoryMap: si tiene tracking activo y cantidad <= 0, sin stock
+          const availableForSale = store.available_for_sale !== false;
+          const stockQty = inventoryMap[v.variant_id] ?? null;
+          const hasTracking = stockQty !== null;
+
+          if (!availableForSale) {
+            inStock = false; // desactivado manualmente en Loyverse
+          } else if (hasTracking) {
+            inStock = stockQty > 0; // tiene tracking: 0 o negativo = sin stock
+          } else {
+            inStock = true; // sin tracking activo = asumimos disponible
+          }
         } else {
           price = v.default_price;
         }
       }
       if (price == null) price = item.default_price;
-      if (price == null) continue; // sin precio no se puede vender online
+      if (price == null) continue;
 
       cleanItems.push({
         id: item.id,
