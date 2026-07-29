@@ -120,13 +120,10 @@ exports.handler = async function (event, context) {
         if (v.stores && v.stores.length > 0) {
           const store = v.stores[0];
           price = store.price != null ? store.price : v.default_price;
-
-          // in_stock es la cantidad real en inventario.
-          // Si el tracking de inventario está activo y el valor es <= 0 → sin stock.
-          // Si in_stock es null → Loyverse no trackea inventario para este producto → mostrarlo disponible.
-          if (store.in_stock != null) {
-            inStock = store.in_stock > 0;
-          }
+          // available_for_sale es el campo real que usa Loyverse para indicar
+          // si el producto está disponible para la venta. Cuando lo desactivás
+          // en Loyverse, viene false → lo mostramos como sin stock.
+          inStock = store.available_for_sale !== false;
         } else {
           price = v.default_price;
         }
@@ -142,7 +139,6 @@ exports.handler = async function (event, context) {
         image: item.image_url || null,
         inStock: inStock,
         isNew: i < NEW_COUNT,
-        _debug_store: variants[0]?.stores?.[0] || null, // TEMPORAL: para diagnosticar campos de stock
       });
     }
 
