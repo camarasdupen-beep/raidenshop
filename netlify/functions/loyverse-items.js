@@ -142,6 +142,7 @@ exports.handler = async function (event, context) {
         image: item.image_url || null,
         inStock: inStock,
         isNew: i < NEW_COUNT,
+        _debug_store: variants[0]?.stores?.[0] || null, // TEMPORAL: para diagnosticar campos de stock
       });
     }
 
