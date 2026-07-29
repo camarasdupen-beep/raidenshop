@@ -112,17 +112,21 @@ exports.handler = async function (event, context) {
       if (item.deleted_at) continue;
 
       const variants = item.variants || [];
-      // Tomar el precio de la primera variante; fallback a default_price del item
       let price = null;
-      let inStock = null;
+      let inStock = true; // default: con stock (si Loyverse no trackea inventario, se muestra disponible)
 
       if (variants.length > 0) {
         const v = variants[0];
         if (v.stores && v.stores.length > 0) {
-          price = v.stores[0].price != null ? v.stores[0].price : v.default_price;
-          inStock = v.stores[0].available_for_sale != null
-            ? v.stores[0].available_for_sale
-            : null;
+          const store = v.stores[0];
+          price = store.price != null ? store.price : v.default_price;
+
+          // in_stock es la cantidad real en inventario.
+          // Si el tracking de inventario está activo y el valor es <= 0 → sin stock.
+          // Si in_stock es null → Loyverse no trackea inventario para este producto → mostrarlo disponible.
+          if (store.in_stock != null) {
+            inStock = store.in_stock > 0;
+          }
         } else {
           price = v.default_price;
         }
