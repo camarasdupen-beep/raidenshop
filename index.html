@@ -274,6 +274,20 @@
     transition:border-color .15s;
   }
   .prod.in-cart{border-color:var(--lime-deep); background:rgba(200,229,98,0.04);}
+  .prod.no-stock{opacity:0.45; pointer-events:none;}
+  .prod.no-stock .prod-price{color:var(--muted);}
+  .out-of-stock-badge{
+    display:inline-block;
+    background:rgba(192,57,43,0.18);
+    color:#e07060;
+    border:1px solid rgba(192,57,43,0.3);
+    font-size:0.65rem;
+    font-weight:700;
+    padding:2px 8px;
+    border-radius:8px;
+    margin-bottom:3px;
+    letter-spacing:0.3px;
+  }
   .prod-icon{
     width:46px; height:46px;
     border-radius:12px;
@@ -825,7 +839,8 @@ async function cargarProductos(){
       p: it.price,
       c: it.category,
       img: it.image || null,
-      isNew: !!it.isNew
+      isNew: !!it.isNew,
+      inStock: it.inStock !== false  // false explícito = sin stock; null/true = disponible
     }));
 
     statusEl.style.display = 'none';
@@ -938,30 +953,36 @@ function buildProductCardHtml(p, index){
   const bg = CAT_BG[p.c] || 'rgba(242,245,238,0.06)';
   const safeName = p.n.replace(/'/g, "\\'");
   const safeImg = p.img ? p.img.replace(/'/g, "\\'") : '';
+  const noStock = p.inStock === false;
 
   const iconInner = p.img
     ? `<img src="${p.img}" alt="" loading="lazy" onerror="this.parentElement.classList.remove('has-img');this.parentElement.innerHTML='${ic}';this.parentElement.style.background='${bg}'">`
     : ic;
   const iconBg = p.img ? 'rgba(242,245,238,0.04)' : bg;
-  const iconClick = p.img ? ` onclick="openImgModal('${safeImg}','${safeName}')"` : '';
+  const iconClick = p.img && !noStock ? ` onclick="openImgModal('${safeImg}','${safeName}')"` : '';
   const delay = index != null ? `style="animation-delay:${Math.min(index,12) * 0.03}s"` : '';
 
-  return `<div class="prod${qty > 0 ? ' in-cart' : ''}" data-pname="${escapeHtml(p.n)}" ${delay}>
-      <div class="prod-icon${p.img ? ' has-img' : ''}" style="background:${iconBg}"${iconClick}>${iconInner}</div>
-      <div class="prod-info">
-        ${p.isNew ? '<div class="new-pill">🔥 Nuevo</div>' : ''}
-        <div class="prod-name">${escapeHtml(p.n)}</div>
-        <div class="prod-price">${fmt(p.p)}</div>
-      </div>
-      <div class="prod-right">
-        ${qty > 0 ? `
-        <div class="qty-wrap">
+  const cardClass = `prod${qty > 0 && !noStock ? ' in-cart' : ''}${noStock ? ' no-stock' : ''}`;
+
+  const rightSection = noStock
+    ? '' // sin botón cuando no hay stock
+    : qty > 0
+      ? `<div class="qty-wrap">
           <button class="qty-btn" onclick="changeQty('${safeName}',-1)">−</button>
           <span class="qty-num">${qty}</span>
           <button class="qty-btn" onclick="changeQty('${safeName}',1)">+</button>
-        </div>` : `
-        <button class="add-btn" onclick="addToCart('${safeName}')">+</button>`}
+        </div>`
+      : `<button class="add-btn" onclick="addToCart('${safeName}')">+</button>`;
+
+  return `<div class="${cardClass}" data-pname="${escapeHtml(p.n)}" ${delay}>
+      <div class="prod-icon${p.img ? ' has-img' : ''}" style="background:${iconBg}"${iconClick}>${iconInner}</div>
+      <div class="prod-info">
+        ${noStock ? '<div class="out-of-stock-badge">Sin stock</div>' : ''}
+        ${p.isNew && !noStock ? '<div class="new-pill">🔥 Nuevo</div>' : ''}
+        <div class="prod-name">${escapeHtml(p.n)}</div>
+        <div class="prod-price">${fmt(p.p)}</div>
       </div>
+      <div class="prod-right">${rightSection}</div>
     </div>`;
 }
 
