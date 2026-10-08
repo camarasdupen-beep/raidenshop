@@ -690,6 +690,82 @@
 
   .prod{animation:fade-in-up .3s ease-out backwards;}
 </style>
+<style id="raiden-premium">
+/* RAIDEN · Capa visual premium. La lógica original se conserva. */
+:root{--bg:#f5f2eb;--bg-2:#eeeadf;--card:#fffdf8;--card-line:#dedfd3;--lime:#41543b;--lime-deep:#536749;--gold:#6b5833;--gold-deep:#897044;--text:#263329;--muted:#656d60;--danger:#b44738;--whatsapp:#41543b}
+html{background:#f5f2eb;scroll-behavior:smooth}
+body{max-width:1180px;background:var(--bg);padding-bottom:120px;font-family:'Inter',Arial,sans-serif}
+.topbar{position:relative;background:transparent;backdrop-filter:none;border-bottom:1px solid var(--card-line);padding:26px 28px 20px}
+.brand-header{display:grid;grid-template-columns:48px 1fr 48px;grid-template-rows:24px 19px;column-gap:12px;text-align:left;align-items:center;margin:0 0 24px}
+.brand-logo{grid-column:1;grid-row:1 / 3;width:42px;height:48px;margin:0;filter:none}
+.brand-name{grid-column:2;grid-row:1;color:var(--text);font-size:19px;letter-spacing:3px;font-weight:700}
+.brand-sub{grid-column:2;grid-row:2;color:var(--muted);font-size:9px;letter-spacing:2px;margin:0}
+.cart-toggle{top:0;background:transparent;border-color:var(--card-line);border-radius:50%;width:44px;height:44px;justify-content:center;padding:0}
+.cart-toggle svg{width:20px;height:20px}
+.cart-badge{color:white;background:var(--lime);font-weight:600}
+.search-wrap{margin-bottom:14px}
+.search-input{padding:15px 18px 15px 44px;border-radius:9px;background:var(--card);font-size:14px;border-color:var(--card-line)}
+.search-input:focus,.customer-input:focus,.address-field:focus{border-color:var(--lime);box-shadow:0 0 0 3px #41543b12}
+.search-wrap svg{left:16px}
+.info-row{font-size:11px;gap:8px;line-height:1.6}
+.premium-hero{margin:24px 28px 30px;position:relative;overflow:hidden;background:#354732;color:#f5f2eb;border-radius:14px;padding:34px 32px}
+.premium-hero:after{content:'';position:absolute;width:210px;height:210px;border:1px solid #f5f2eb26;border-radius:50%;right:-100px;top:-55px;box-shadow:0 0 0 32px #f5f2eb08,0 0 0 64px #f5f2eb05;pointer-events:none}
+.premium-eyebrow{font-size:10px;letter-spacing:2.6px;text-transform:uppercase;color:#d1d8bf;margin:0 0 14px}
+.premium-hero h1{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:clamp(34px,5vw,56px);line-height:1.06;letter-spacing:-1px;margin:0 0 15px;position:relative;z-index:1}
+.premium-hero p:last-child{max-width:420px;color:#dde1d4;font-size:13px;line-height:1.7;margin:0;position:relative;z-index:1}
+.new-arrivals{padding:0 0 24px;border:0}
+.new-arrivals-title{padding:0 28px;margin-bottom:14px;color:var(--text);font-size:15px;font-weight:600;letter-spacing:-.3px}
+.new-arrivals-scroll{padding:0 28px 5px;gap:12px}
+.new-card{width:164px;border:1px solid var(--card-line);border-radius:12px;padding:12px;background:var(--card)}
+.new-card-icon{height:116px;border-radius:8px;background:#edece3!important}
+.new-card-icon img,.prod-icon img{object-fit:contain;background:#fffdf8}
+.new-card-badge,.new-pill{background:#ede4cb;color:#5d4b2b;font-weight:500;border-radius:4px;padding:4px 7px}
+.new-card-name{font-size:12px;line-height:1.5;margin:8px 0;min-height:36px}
+.new-card-price{color:var(--text);font-size:14px;font-weight:600;padding-right:34px}
+.new-card-add{width:30px;height:30px;border-radius:50%;background:var(--lime);color:white}
+.cats-wrap{position:sticky;top:0;background:#f5f2ebf5;backdrop-filter:blur(12px);padding:15px 28px;gap:8px;border-top:1px solid var(--card-line);border-bottom:1px solid var(--card-line)}
+.chip{padding:11px 17px;font-size:12px;border-radius:6px;background:transparent;color:var(--muted);font-weight:500}
+.chip.active{background:var(--lime);color:#fff;border-color:var(--lime)}
+.count-bar{padding:22px 28px 12px;font-size:11px;letter-spacing:.4px}
+.grid{padding:0 28px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.prod{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:12px;padding:16px;border-radius:12px;background:var(--card);box-shadow:0 3px 12px #26332903;transition:border-color .2s,box-shadow .2s}
+.prod-icon{grid-column:1 / -1;width:100%;height:190px;border-radius:8px;font-size:36px;background:#edece3!important}
+.prod-info{align-self:start}
+.prod-name{font-size:13px;line-height:1.5;font-weight:400;margin-bottom:10px;overflow-wrap:anywhere}
+.prod-price{font-family:'Inter',Arial,sans-serif;font-size:17px;font-weight:600;color:var(--text)}
+.prod-right{align-self:end}
+.add-btn{width:40px;height:40px;border-radius:50%;background:var(--lime);color:white;box-shadow:none;font-weight:400}
+.qty-wrap{border-radius:20px;background:var(--bg);border-color:var(--card-line)}
+.qty-btn{width:30px;height:40px;color:var(--lime)}
+.qty-num{min-width:20px;font-size:13px}
+.prod.in-cart{background:#f4f6ed;border-color:#80916c}
+.prod.no-stock{opacity:.65}
+.out-of-stock-badge{background:#f4e9e4;color:#924839;border-color:#e1c9bf;font-weight:500;border-radius:4px}
+.empty-msg{grid-column:1 / -1;padding:50px 20px}
+.drawer{background:var(--card);box-shadow:0 -12px 60px #26332926;border-radius:20px 20px 0 0;max-height:90dvh}
+.drawer-title,.total-amount,.bb-total{color:var(--text);font-weight:600}
+.drawer-items{min-height:50px}
+.drawer-footer{max-height:65dvh;overflow-y:auto}
+.customer-input{min-width:0;font-size:16px}
+.address-field{font-size:16px}
+.fulfill-opt.active{background:#e9eedf;color:var(--lime);border-color:#829574}
+.ci-price{color:var(--text);font-weight:600}
+.points-row{background:#f3eddf;border-color:#e5dcc8;color:#6b5833}
+.wa-btn{border-radius:8px;background:var(--lime);font-weight:500}
+.bottom-bar{max-width:560px;background:var(--lime);border:1px solid #5a6d50;box-shadow:0 10px 40px #26332926;border-radius:12px;bottom:calc(14px + env(safe-area-inset-bottom));padding:14px 18px}
+.bb-total{color:white;font-size:21px}.bb-items{color:#dfe5d5}
+.bb-btn{background:#eef0e3;color:#354732;font-weight:600;border-radius:7px;padding:12px 17px}
+.points-toast,.toast{max-width:calc(100vw - 24px);white-space:normal;text-align:center;box-shadow:0 6px 22px #2633291f;border-color:var(--card-line)}
+.premium-footer{margin:40px 28px 0;border-top:1px solid var(--card-line);padding:24px 0;display:flex;justify-content:space-between;gap:14px;font-size:11px;line-height:1.6;color:var(--muted)}
+.premium-footer a{color:var(--lime);text-decoration:none}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #897044;outline-offset:4px}
+@media(hover:hover){.prod:hover{border-color:#aab69b;box-shadow:0 7px 22px #26332908}.chip:hover{border-color:#8f9b82}.add-btn:hover,.new-card-add:hover{background:#536749}}
+@media(min-width:900px){.topbar{display:grid;grid-template-columns:1fr 1fr;gap:12px 48px;align-items:center}.brand-header{margin:0}.search-wrap{margin:0}.info-row{grid-column:1 / -1}.premium-hero{padding:46px}.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:680px){.topbar{padding:22px 20px 16px}.premium-hero{margin:20px 20px 25px;padding:28px 24px}.premium-hero h1{font-size:39px}.cats-wrap{padding:12px 20px}.new-arrivals-title{padding:0 20px}.new-arrivals-scroll{padding-left:20px;padding-right:20px}.count-bar{padding:20px 20px 12px}.grid{padding:0 20px;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.prod{padding:12px;gap:10px}.prod-icon{height:150px}.prod-info{grid-column:1 / -1}.prod-name{font-size:12px;min-height:36px;margin-bottom:8px}.prod-right{grid-column:1 / -1;justify-content:flex-end}.prod-price{font-size:16px}.premium-footer{margin:32px 20px 0}.info-row{font-size:10px}}
+@media(max-width:360px){.grid{padding:0 12px;gap:8px}.prod{padding:10px}.prod-icon{height:128px}.premium-hero h1{font-size:33px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}.toast,.toast.toast-out,.img-modal-overlay.open{animation:none!important}}
+
+</style>
 </head>
 <body>
 
@@ -716,6 +792,12 @@
   </div>
 </div>
 
+<section class="premium-hero" aria-label="Bienvenida a Raiden">
+  <p class="premium-eyebrow">NUTRICIÓN · BIENESTAR · ENERGÍA</p>
+  <h1>Tu mejor versión<br>empieza acá.</h1>
+  <p>Elegí tus favoritos, armá tu pedido y coordiná con nosotros por WhatsApp.</p>
+</section>
+
 <div class="new-arrivals" id="newArrivals" style="display:none">
   <div class="new-arrivals-title">🔥 Recién llegados</div>
   <div class="new-arrivals-scroll" id="newArrivalsScroll"></div>
@@ -731,6 +813,8 @@
   Cargando catálogo...
 </div>
 <div class="grid" id="grid"></div>
+
+<footer class="premium-footer"><span>RAIDEN<br>Tu punto de energía.</span><a href="https://clubraiden.netlify.app/" target="_blank" rel="noopener">Descubrí Club Raiden ↗</a></footer>
 
 <!-- CART DRAWER -->
 <div class="overlay" id="overlay" onclick="toggleCart()"></div>
