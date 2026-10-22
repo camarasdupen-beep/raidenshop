@@ -56,6 +56,7 @@ exports.handler = async function (event, context) {
     'Content-Type': 'application/json',
   };
 
+  const strictSnapshot = event.headers?.['x-raiden-snapshot'] === '1';
   const token = process.env.LOYVERSE_TOKEN;
   if (!token) {
     return {
@@ -103,6 +104,7 @@ exports.handler = async function (event, context) {
         const res = await fetch(url.toString(), { headers: authHeaders });
         if (res.ok) {
           const data = await res.json();
+          if (strictSnapshot && !Array.isArray(data.inventory_levels)) throw new Error('Inventario incompleto.');
           (data.inventory_levels || []).forEach((inv) => {
             if (inv.variant_id != null) {
               inventoryMap[inv.variant_id] = inv.in_stock ?? null;
@@ -110,11 +112,13 @@ exports.handler = async function (event, context) {
           });
           invCursor = data.cursor || null;
         } else {
+          if (strictSnapshot) throw new Error('No se pudo consultar el inventario.');
           invCursor = null; // si falla inventory, seguimos sin él
         }
       } while (invCursor);
     } catch (invErr) {
       // Si /inventory falla (permisos, etc.), seguimos solo con available_for_sale
+      if (strictSnapshot) throw invErr;
       console.warn('No se pudo cargar inventario:', invErr.message);
     }
 
